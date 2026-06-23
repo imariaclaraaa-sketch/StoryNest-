@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title> StoryNest</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#e9d5ff,#9333ea);
+text-align:center;
+color:white;
+}
+
+.card{
+max-width:700px;
+margin:20px auto;
+background:white;
+color:#4c1d95;
+padding:20px;
+border-radius:25px;
+box-shadow:0 10px 25px #0003;
+}
+
+button{
+border:0;
+border-radius:15px;
+padding:12px;
+margin:6px;
+cursor:pointer;
+}
+
+.answer{
+width:100%;
+background:#f3e8ff;
+color:#4c1d95;
+}
+
+.correct{
+background:#22c55e!important;
+color:white;
+}
+
+.wrong{
+background:#ef4444!important;
+color:white;
+}
+
+.menu{
+background:#7c3aed;
+color:white;
+}
+
+.top{
+display:flex;
+justify-content:space-between;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0008;
+}
+
+.popup{
+background:white;
+color:#4c1d95;
+margin:80px auto;
+padding:20px;
+width:80%;
+border-radius:20px;
+text-align:left;
+max-height:70%;
+overflow:auto;
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+<h1> StoryNest</h1>
+
+<h4>C1 quiz</h4>
+
+<div>📊 <span id="progress"></span></div>
+</div>
+
+
+<h2 id="question"></h2>
+
+
+<div id="answers"></div>
+
+
+<button class="menu" onclick="learn()">📖 Learn More</button>
+
+<button class="menu" onclick="showIPA()">🔊 IPA</button>
+
+
+
+<br>
+
+
+<button class="menu" onclick="previous()">⬅️ Previous</button>
+
+<button class="menu" onclick="next()">➡️ Next</button>
+
+
+</div>
+
+
+
+<div class="modal" id="learnBox">
+
+<div class="popup">
+
+<button onclick="closeLearn()">❌ Close</button>
+
+<div id="learnText"></div>
+
+</div>
+
+</div>
+
+
+
+<div class="modal" id="ipaBox">
+
+<div class="popup">
+
+<button onclick="closeIPA()">❌ Close</button>
+
+<h2 id="ipaText"></h2>
+
+</div>
+
+</div>
+
+
+
+
+<script>
+
+
+let words=[
+
+
+{
+w:"Resilient",
+c:"Strong after problems",
+x:["Weak after problems","Fast after problems","Soft after problems"],
+ipa:"/rɪˈzɪliənt/",
+learn:`
+📘 Meaning:
+Able to recover after difficulties.
+
+🧠 Explanation:
+A resilient person continues even when things are challenging.
+
+💬 Use it for:
+People, teams, or things that handle problems well.
+
+✨ Examples:
+1. She was resilient after failing the exam.
+2. The team showed a resilient attitude.
+
+🔗 Similar:
+strong, determined
+
+⚠️ Opposite:
+weak, fragile
+`
+},
+
+
+{
+w:"Inevitable",
+c:"something that is certain to happen and is not avoidable",
+x:["something that is impossible to happen","something that can be avoided easily","something that happens by accident"],
+ipa:"/ɪnˈɛvɪtəbəl/",
+learn:`
+📘 Meaning:
+Something that will definitely happen.
+
+🧠 Explanation:
+It cannot be avoided.
+
+💬 Use it for:
+Events that are guaranteed.
+
+✨ Examples:
+1. Change is inevitable.
+2. Mistakes are sometimes inevitable.
+
+🔗 Similar:
+certain, unavoidable
+
+⚠️ Opposite:
+avoidable
+`
+},
+
+
+{
+w:"Quippy",
+c:"Funny and clever",
+x:["slow and confusing", "very serious and silent", "Angry and loud"],
+ipa:"/ˈkwɪpi/",
+learn:`
+📘 Meaning:
+Clever and humorous.
+
+🧠 Explanation:
+A quippy person makes quick witty comments.
+
+✨ Examples:
+1. He made a quippy reply.
+2. Her quippy jokes were funny.
+
+🔗 Similar:
+witty, clever
+
+⚠️ Opposite:
+dull
+`
+},
+
+
+{
+w:"Meticulous",
+c:"Very careful",
+x:["Careless and rushed","loud and energetic", "funny and joking"],
+ipa:"/məˈtɪkjʊləs/",
+learn:`
+📘 Meaning:
+Extremely careful.
+
+🧠 Explanation:
+A meticulous person pays attention to small details.
+
+✨ Examples:
+1. She was meticulous with her homework.
+2. The artist was meticulous.
+
+🔗 Similar:
+careful, precise
+
+⚠️ Opposite:
+careless
+`
+},
+
+
+{
+w:"Eloquent",
+c:"Speaking in clear and fluent language",
+x:["Speaking loudly without thinking carefully","Being shy and avoiding all speaking","Using confusing and messy language"],
+ipa:"/ˈɛləkwənt/",
+learn:`
+📘 Meaning:
+Able to express ideas beautifully.
+
+🧠 Explanation:
+An eloquent speaker communicates clearly.
+
+✨ Examples:
+1. His speech was eloquent.
+2. She wrote an eloquent message.
+
+🔗 Similar:
+expressive
+
+⚠️ Opposite:
+unclear
+`
+},
+
+{
+  
+  
+w:"Austere",
+c:"Extremely simple and without luxury",
+x:["Very rich and highly decorated style","Bright and colorful in appearance","Soft and gentle in all design"],
+ipa:"/ɔːˈstɪər/",
+learn:`
+📘 Meaning:
+Very simple, plain, and strict, with no decoration or comfort, often creating a serious or severe feeling.
+🧠 Explanation:
+Something austere is very simple, plain, and strict, with no decoration or comfort, often giving a serious or severe feeling.
+
+✨ Examples:
+
+1. The room was austere and empty.
+
+
+2. He lived an austere lifestyle.
+
+
+
+🔗 Similar:
+minimalistic
+
+⚠️ Opposite:
+luxurious
+`
+}
+];
+// create 6 questions
+while(words.length < 6){
+words.push({...words[words.length % 5]});
+}
+
+
+let index=0;
+let score=0;
+let answered=[];
+
+
+function shuffle(arr){
+return [...arr].sort(()=>Math.random()-0.5);
+}
+
+
+
+function load(){
+
+
+let q=words[index];
+
+
+question.innerText=
+"What does "+q.w+" mean?";
+
+
+progress.innerText=
+(index+1)+"/6";
+
+
+answers.innerHTML="";
+
+
+
+shuffle([q.c,...q.x]).forEach(text=>{
+
+
+let btn=document.createElement("button");
+
+btn.className="answer";
+
+btn.innerText=text;
+
+
+
+btn.onclick=function(){
+
+
+if(answered[index])return;
+
+
+answered[index]=true;
+
+
+document.querySelectorAll(".answer").forEach(b=>{
+b.disabled=true;
+});
+
+
+
+if(text==q.c){
+
+btn.classList.add("correct");
+
+score++;
+
+scoreEl.innerText=score;
+
+
+}else{
+
+
+btn.classList.add("wrong");
+
+
+document.querySelectorAll(".answer").forEach(b=>{
+
+if(b.innerText==q.c)
+b.classList.add("correct");
+
+});
+
+
+}
+
+
+};
+
+
+
+answers.appendChild(btn);
+
+
+});
+
+
+}
+
+
+
+function next(){
+
+if(index<19){
+
+index++;
+
+load();
+
+}
+
+}
+
+
+
+function previous(){
+
+if(index>0){
+
+index--;
+
+load();
+
+}
+
+}
+
+
+
+function learn(){
+
+learnText.innerHTML=
+words[index].learn;
+
+learnBox.style.display="block";
+
+}
+
+
+
+function closeLearn(){
+
+learnBox.style.display="none";
+
+}
+
+
+
+function showIPA(){
+
+ipaText.innerText=
+words[index].ipa;
+
+ipaBox.style.display="block";
+
+}
+
+
+
+function closeIPA(){
+
+ipaBox.style.display="none";
+
+}
+
+
+
+function playAudio(){
+
+let speech=
+new SpeechSynthesisUtterance(words[index].w);
+
+speech.lang="en-US";
+speech.rate=0.8;
+
+speechSynthesis.speak(speech);
+
+}
+
+
+
+load();
+
+
+</script>
+
+
+</body>
+</html>
